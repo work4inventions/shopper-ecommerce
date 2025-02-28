@@ -51,7 +51,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderColor,
+    borderBottomColor: colors.gray,
   },
   TitleContainer: {
     flexDirection: 'row',

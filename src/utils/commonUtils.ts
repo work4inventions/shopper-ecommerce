@@ -170,4 +170,5 @@ export const getMaxFileSize = (planName: string) => {
 };
 
 
-export const API_URL = 'https://api.example.com';
+export const API_URL = 'https://shopper-ecommerce.myshopify.com/api/2025-01/graphql.json';
+export const ACCESS_TOKEN = "4bd135aed7c24e3a73afe9667ab059fd";

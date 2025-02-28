@@ -1,6 +1,6 @@
 export const fonts = {
-    medium: 'Outfit-Medium',
-    bold: 'Outfit-Bold',
-    regular: 'Outfit-Regular',
-    semiBold: 'Outfit-SemiBold',
-}
+    regular: 'futura light font',
+    medium: 'futura medium bt',
+    bold: 'futura bold font.ttf',
+    semiBold: 'futura heavy font.ttf',
+  };

@@ -1,6 +1,7 @@
 import React from 'react';
 import {ActivityIndicator, Pressable, StyleSheet} from 'react-native';
 import Typography from '../Typography';
+import { colors } from '../../constants/colors';
 
 const ButtonWithLoader = ({
   title,
@@ -18,7 +19,7 @@ const btnStyle = buttonStyles(bgColor);
       style={[buttonStyle, loading || disabled ? btnStyle.disabled : null]}
       disabled={loading || disabled}>
       {loading ? (
-        <ActivityIndicator size="small" color="#ffffff" />
+        <ActivityIndicator size="small" color={colors.white} />
       ) : (
         <Typography title={title} textStyle={textStyle} />
       )}

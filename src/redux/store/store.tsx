@@ -2,12 +2,16 @@ import {configureStore} from '@reduxjs/toolkit';
 import userLoginSlice from '../slice/userLoginSlice';
 import userRegisterSlice from '../slice/userRegisterSlice';
 import userAuthenticateSlice from '../slice/userAuthenticateSlice';
+import getCategoriesSlice from '../slice/categoriesSlice'
+import categoriesDataSlice from '../slice/categoriesDataSlice';
 
 const store = configureStore({
   reducer: {
     userLogin: userLoginSlice,
     userRegister: userRegisterSlice,
     getUserAuthenticate: userAuthenticateSlice,
+    getCategories:getCategoriesSlice,
+    categoriesData:categoriesDataSlice,
   }
 });
 
