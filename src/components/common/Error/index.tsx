@@ -11,7 +11,7 @@ const Error = () => {
         <Image
           src={images.data_empty}
           resizeMode="stretch"
-          tintColor={colors.darkGray}
+          tintColor={colors.gray}
           style={styles.errorImg}
         />
         <Typography

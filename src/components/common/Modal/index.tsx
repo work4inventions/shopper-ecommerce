@@ -79,7 +79,7 @@ const CustomModal = ({
 const styles = StyleSheet.create({
   container: {flex: 1, backgroundColor: 'rgba(0,0,0,0.5)'},
   modalBox: {margin: 20, borderRadius: 10, overflow: 'hidden', width: '100%'},
-  content: {backgroundColor: colors.darkGray, padding: 20, borderRadius: 10},
+  content: {backgroundColor: colors.gray, padding: 20, borderRadius: 10},
   main: {
     justifyContent: 'center',
     alignItems: 'center',
