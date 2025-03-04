@@ -1,27 +1,46 @@
-import Categories from "@/src/components/Category";
-import { colors } from "@/src/components/constants/colors";
-import MyCarousel from "@/src/components/Slider";
-import Trending from "@/src/components/Trending";
+import Typography from "@/src/components/common/Typography";
+import Categories from "@/src/components/Home/Category";
+import CategoryCard from "@/src/components/Home/CategoryCard";
+import Produt from "@/src/components/Home/Product";
+import Saying from "@/src/components/Home/Saying";
+import MyCarousel from "@/src/components/Home/Slider";
+import { commonStyles } from "@/src/config/styles/commonStyles";
 import { categoriesData } from "@/src/redux/slice/categoriesDataSlice";
 import { getCategories } from "@/src/redux/slice/categoriesSlice";
-import React, { useEffect } from "react";
-import { Dimensions, ScrollView, StyleSheet } from "react-native";
-import { useDispatch } from "react-redux";
-const { width } = Dimensions.get("window");
+import { RootState } from "@/src/redux/store/store";
+import React, { useEffect, useState } from "react";
+import { ScrollView, Text } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 
 const HomeScreen = () => {
   const dispatch = useDispatch();
-
-  const id = "gid://shopify/Collection/322389541002";
+  const [TrendingProduct, setTrendingProduct] = useState([]);
+  const [NewArrivals, setNewArrivals] = useState([]);
+  const getCategoriesData = useSelector(
+    (state: RootState) => state.getCategories
+  );
+  const categorys = getCategoriesData?.data?.edges.map((item) => item.node);
 
   useEffect(() => {
-    dispatch(getCategories());
-    dispatch(categoriesData(id));
+    const trendingData = async () => {
+      const response = await dispatch(getCategories());
+      const trending = await response?.payload?.edges?.find((item) => item.node.title === "Trending");
+      if (trending) {              
+        setTrendingProduct(trending?.node?.products);
+      }
+      const newArrivals = await response?.payload?.edges?.find(
+        (item) => item.node.title === "New Arrivals"
+      );
+      if (newArrivals) {
+        setNewArrivals(newArrivals?.node?.products);
+      }
+    };
+    trendingData();
   }, []);
 
   return (
     <ScrollView
-      style={styles.container}
+      style={commonStyles.container}
       nestedScrollEnabled={true}
       showsVerticalScrollIndicator={false}
     >
@@ -31,15 +50,16 @@ const HomeScreen = () => {
       <Categories />
 
       {/* Products Grid */}
-      <Trending />
+      <Typography title="Trending Now" textStyle={commonStyles.sectionTitle} />
+      <Produt getCategorieData={TrendingProduct} />
+
+      <CategoryCard />
+
+      <Saying />
+      <Typography title="New Arrivals" textStyle={commonStyles.sectionTitle} />
+      <Produt getCategorieData={NewArrivals} />
     </ScrollView>
   );
 };
-
-// Styles
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white, paddingTop: 20 },
-
-});
 
 export default HomeScreen;

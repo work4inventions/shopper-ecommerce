@@ -1,43 +1,42 @@
 import Register from "@/src/app/auth/register";
 import Login from "@/src/app/auth/login";
 import Intro from "@/src/app/auth";
-
+import { SCREENS } from "./routes";
 
 export const authStackNav = [
-  {
-    name: 'index',
-    component: Intro,  
-  },
-  {
-    name: 'login',
-    component: Login,  
-  },
-  {
-    name: 'register',
-    component: Register,  
-  },
-
+  // {
+  //   name: "index",
+  //   component: Intro,
+  // },
+  // {
+  //   name: SCREENS.LOGIN,
+  //   component: Login,
+  // },
+  // {
+  //   name: SCREENS.REGISTER,
+  //   component: Register,
+  // },
 ];
 
 export const tabItems = [
   {
-    name: "index",
+    name: SCREENS.HOME,
     title: "Home",
-    src: "home", 
+    src: "home",
   },
   {
-    name: "collections",
+    name: SCREENS.COLLECTIONS,
     title: "Collections",
-    src: "collections", 
+    src: "category",
   },
   {
-    name: "search",
+    name: SCREENS.SEARCH,
     title: "Search",
-    src: "search", 
+    src: "search",
   },
   {
-    name: "cart",
+    name: SCREENS.CART,
     title: "Cart",
-    src: "shopping-cart", 
+    src: "shopping-cart",
   },
 ];

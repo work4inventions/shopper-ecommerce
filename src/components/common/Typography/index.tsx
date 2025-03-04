@@ -28,7 +28,7 @@ const textStyles = (size: number, color: string) =>
   StyleSheet.create({
     textContainer: {
       fontSize: size ? size : 18,
-      color: color ? color : colors.white,
+      color: color ? color : colors.black,
       fontFamily: fonts.medium,
     },
   });

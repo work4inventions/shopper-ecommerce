@@ -4,7 +4,7 @@
     "slug": "Shopper",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./src/assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -28,7 +28,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "../src/assets/images/splash-icon.png",
+          "image": "./src/assets/images/splash.png",
           "resizeMode": "contain"
         }
       ],

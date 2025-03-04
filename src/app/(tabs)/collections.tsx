@@ -1,131 +1,204 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, ActivityIndicator, FlatList, Button, Image } from "react-native";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  StyleSheet,
+  Pressable,
+} from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { getProducts } from "@/src/redux/slice/getProductSlice";
+import Loader from "@/src/components/common/Loader";
+import { colors } from "@/src/components/constants/colors";
+import { fonts } from "@/src/components/constants/fonts";
+import { MaterialIcons } from "@expo/vector-icons";
+import { commonStyles } from "@/src/config/styles/commonStyles";
+import { RootState } from "@/src/redux/store/store";
 
-const Collections = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [hasNextPage, setHasNextPage] = useState(true);
-  const [cursor, setCursor] = useState(null);
-
+const Collections = ({ route }) => {
+  // const { categoryTitle } = route.params;
+  
+  const dispatch = useDispatch();
+  const [Products, setProducts] = useState()
+  const { products, isLoading, error, hasNextPage, cursor } = useSelector(
+    (state: RootState) => state.getProducts
+  );
+  const getCategoriesData = useSelector(
+    (state: RootState) => state.getCategories
+  );
+  const categorys = getCategoriesData?.data?.edges.map((item) => item.node);
+  console.log(categorys);
+  
   useEffect(() => {
-    fetchData();
-  }, []);
+      // const trendingData = async () => {
+      //     const trending = await response?.payload?.edges?.find((item) => item.node.title === categoryTitle);
+      //     if (trending) {              
+      //       setProducts(trending?.node?.products);
+      //     }
+      //   };
+      //   trendingData();
+    if (products.length === 0) {
+      dispatch(getProducts());
+    }
+  }, [dispatch, products.length]);
 
-  const fetchData = async () => {
-    const apiUrl = "https://shopper-ecommerce.myshopify.com/api/2025-01/graphql.json";
-    const accessToken = "4bd135aed7c24e3a73afe9667ab059fd";
-
-    const query = `
-      query($cursor: String) {
-        products(first: 10, after: $cursor) {
-          edges {
-            node {
-              id
-              title
-              handle
-              images(first: 1) {
-                edges {
-                  node {
-                    originalSrc
-                  }
-                }
-              }
-            }
-          }
-          pageInfo {
-            hasNextPage
-            endCursor
-          }
-        }
-      }
-    `;
-
-    const variables = {
-      cursor: cursor
-    };
-
-    setLoading(true);
-
-    try {
-      const response = await axios.post(
-        apiUrl,
-        { query, variables },
-        {
-          headers: {
-            "X-Shopify-Storefront-Access-Token": accessToken,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const { edges, pageInfo } = response.data.data.products;
-      setProducts((prevProducts) => [...prevProducts, ...edges]);
-      setHasNextPage(pageInfo.hasNextPage);
-      setCursor(pageInfo.endCursor);
-
-      setLoading(false);
-    } catch (error) {
-      console.log("Error fetching data:", error);
-      setError(error);
-      setLoading(false);
+  const handleLoadMore = () => {
+    if (hasNextPage && cursor) {
+      dispatch(getProducts(cursor));
     }
   };
 
-  if (loading && products.length === 0) {
+  const renderProduct = ({ item }) => {
+    const imageUrl = item.node?.images?.edges?.[0]?.node?.originalSrc;
     return (
-      <View>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Loading...</Text>
+      <View style={styles.productCard}>
+        <Image source={{ uri: imageUrl }} style={styles.productImage} />
+        <Text style={styles.productName}>{item.node.title}</Text>
+        <View style={{ flexDirection: "row", gap: 10, marginVertical: 8 }}>
+          <Text
+            style={[
+              styles.productPrice,
+              { textDecorationLine: "line-through" },
+            ]}
+          >
+            {`$ ${item.node.compareAtPriceRange.minVariantPrice.amount}`}
+          </Text>
+          <Text
+            style={[styles.productPrice, { color: colors.colorTextSavings }]}
+          >
+            {`$ ${item.node.priceRange.minVariantPrice.amount}`}
+          </Text>
+        </View>
+        <View style={styles.saleTag}>
+          <Text style={styles.saleTagText}>Sale</Text>
+        </View>
+      </View>
+    );
+  };
+
+  if (isLoading && products.length === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Loader />
       </View>
     );
   }
 
   if (error) {
     return (
-      <View>
-        <Text>Error: {error.message}</Text>
-        <Button title="Retry" onPress={fetchData} />
+      <View style={styles.errorContainer}>
+        <Text>Error: {error}</Text>
+        <Pressable onPress={() => dispatch(getProducts())}>
+          <Text style={styles.retryButton}>Retry</Text>
+        </Pressable>
       </View>
     );
   }
 
   return (
-    <View style={{ padding: 10 }}>
-      <Text>Shopify Products:</Text>
+    <View style={commonStyles.container}>
       <FlatList
         data={products}
-        showsVerticalScrollIndicator={false}
+        renderItem={renderProduct}
         keyExtractor={(item) => item.node.id}
-        renderItem={({ item }) => (
-          <View style={{ padding: 10, marginBottom: 10, borderWidth: 1, borderRadius: 5 }}>
-            <Text>Id: {item.node.id}</Text>
-            <Text>Title: {item.node.title}</Text>
-            <Text>Handle: {item.node.handle}</Text>
-
-            {/* Render product image */}
-            {item.node.images.edges.length > 0 && (
-              <View>
-                <Text>Product Image:</Text>
-                <Image
-                  source={{ uri: item.node.images.edges[0].node.originalSrc }}
-                  style={{ width: 200, height: 200, marginTop: 10 }}
-                />
-              </View>
-            )}
-          </View>
-        )}
+        numColumns={2}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.serviceList}
         ListFooterComponent={
-          loading ? (
-            <ActivityIndicator size="large" color="#0000ff" />
+          isLoading ? (
+            <Loader />
           ) : hasNextPage ? (
-            <Button title="Load More" onPress={fetchData} />
+            <View
+              style={{
+                width: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Pressable
+                onPress={() => handleLoadMore()}
+                style={styles.loadMore}
+              >
+                <MaterialIcons
+                  name="keyboard-arrow-down"
+                  size={32}
+                  color={colors.black}
+                />
+              </Pressable>
+            </View>
           ) : null
         }
       />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  retryButton: {
+    color: colors.primary,
+    marginTop: 10,
+    textDecorationLine: "underline",
+  },
+  serviceList: {
+    gap: 20,
+  },
+  productCard: {
+    flex: 1,
+    margin: 10,
+    backgroundColor: colors.primaryLight,
+    alignItems: "center",
+    width: "45%",
+    height: "100%",
+  },
+  productImage: {
+    width: "100%",
+    height: 250,
+  },
+  productName: {
+    fontSize: 14,
+    fontFamily: fonts.regular,
+    marginVertical: 8,
+    textAlign: "center",
+    letterSpacing: 0.5,
+    width: "90%",
+  },
+  productPrice: {
+    fontSize: 12,
+    color: colors.gray,
+    fontFamily: fonts.regular,
+  },
+  loadMore: {
+    width: 50,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    borderRadius: 50,
+  },
+  saleTag: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    backgroundColor: colors.black,
+    padding: 5,
+  },
+  saleTagText: {
+    color: colors.white,
+    fontSize: 12,
+    fontFamily: fonts.regular,
+    letterSpacing: 1,
+  },
+});
 
 export default Collections;

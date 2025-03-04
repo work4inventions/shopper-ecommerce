@@ -4,6 +4,7 @@ import userRegisterSlice from '../slice/userRegisterSlice';
 import userAuthenticateSlice from '../slice/userAuthenticateSlice';
 import getCategoriesSlice from '../slice/categoriesSlice'
 import categoriesDataSlice from '../slice/categoriesDataSlice';
+import getProductsSlice from '../slice/getProductSlice';
 
 const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ const store = configureStore({
     getUserAuthenticate: userAuthenticateSlice,
     getCategories:getCategoriesSlice,
     categoriesData:categoriesDataSlice,
+    getProducts:getProductsSlice,
   }
 });
 

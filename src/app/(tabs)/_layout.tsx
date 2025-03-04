@@ -40,11 +40,11 @@ export default function TabLayout() {
                 <MaterialIcons
                   size={28}
                   name={item.src}
-                  color={focused ? colors.primery : colors.gray}
+                  color={focused ? colors.primary : colors.gray}
                 />
                 <Typography
                   title={item.title}
-                  color={focused ? colors.primery : colors.black}
+                  color={focused ? colors.primary : colors.black}
                   size={10}
                   textStyle={{ fontWeight: "bold" }}
                 />

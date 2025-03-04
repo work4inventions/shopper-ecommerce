@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import AxiosInstance from "../../authServices/axiosInstance";
 import { ACCESS_TOKEN, API_URL } from "@/src/utils/commonUtils";
 
@@ -7,28 +7,29 @@ interface initialValType {
   data: any | null;
   isError: boolean;
   errorMessage: string;
+  hasNextPage: boolean,
+  cursor: null,
+  products:any
 }
 
-export const categoriesData: any = createAsyncThunk(
-  "categoriesData",
-  async (id) => {
+export const getProducts = createAsyncThunk(
+  "getProducts",
+  async (cursor: string | null) => {
     const query = `
-    query($id: ID!) {
-      collection(id: $id) {
-        products(first: 20) {
-          edges {
-            node {
-              id
-              title
-              handle
-              description
-              images(first: 1) {
-                edges {
-                  node {
-                    originalSrc
-                  }
-                }
-              }
+     query($cursor: String) {
+       products(first: 10, after: $cursor) {
+         edges {
+           node {
+             id
+             title
+             handle
+             images(first: 1) {
+               edges {
+                   node {
+                      originalSrc
+                 }
+               }
+             }
               compareAtPriceRange {
                 minVariantPrice {
                   amount
@@ -41,17 +42,22 @@ export const categoriesData: any = createAsyncThunk(
                   currencyCode
                 }
               }
-            }
-          }
-        }
-      }
-    }
-  `;
-  const variables = { id }; 
+           }
+         }
+         pageInfo {
+           hasNextPage
+           endCursor
+         }
+       }
+     }
+   `;
+
+    const variables = { cursor };
+
     try {
       let response = await AxiosInstance.post(
         `${API_URL}`,
-        { query ,variables},
+        { query, variables },
         {
           headers: {
             "X-Shopify-Storefront-Access-Token": `${ACCESS_TOKEN}`,
@@ -59,43 +65,47 @@ export const categoriesData: any = createAsyncThunk(
           },
         }
       );
-      return response.data.data.collection.products.edges;
+
+      return response.data.data.products;
     } catch (error: any) {
       if (error.response) {
         throw error.response.data.message;
       } else {
-        throw error;
+        throw error.message || "An unexpected error occurred";
       }
     }
   }
 );
 
 const initialState: initialValType = {
+  products: [],
   isLoading: false,
-  data: null,
   isError: false,
   errorMessage: "",
+  hasNextPage: true,
+  cursor: null,
+  data: null,
 };
 
-const categoriesDataSlice = createSlice({
-  name: "categoriesData",
+const getProductsSlice = createSlice({
+  name: "getProducts",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(categoriesData.pending, (state) => {
+      .addCase(getProducts.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
         state.errorMessage = "";
       })
-
-      .addCase(categoriesData.fulfilled, (state, action) => {
+      .addCase(getProducts.fulfilled, (state, action) => {
+        const { edges, pageInfo } = action.payload;
+        state.products = [...state.products, ...edges];
+        state.hasNextPage = pageInfo.hasNextPage;
+        state.cursor = pageInfo.endCursor;
         state.isLoading = false;
-        state.data = action.payload;
-        state.isError = false;
       })
-
-      .addCase(categoriesData.rejected, (state, action) => {
+      .addCase(getProducts.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.errorMessage = action.error.message || "Something went wrong";
@@ -103,4 +113,4 @@ const categoriesDataSlice = createSlice({
   },
 });
 
-export default categoriesDataSlice.reducer;
+export default getProductsSlice.reducer;

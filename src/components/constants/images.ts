@@ -8,7 +8,7 @@ import Splash from "../Splash"
 
 
 export const images = {
-    splash_img : require('../../assets/images/splash-icon.png'),
+    splash_img : require('../../assets/images/splash.png'),
     // data_empty : require('../assets/images/data_empty.png'),
 
     //slider images

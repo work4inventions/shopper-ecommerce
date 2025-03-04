@@ -6,7 +6,7 @@ import { colors } from '../../constants/colors';
 const Loader = () => {
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color={colors.white} animating={true} />
+      <ActivityIndicator size="large" color={colors.primary} animating={true} />
     </View>
   );
 };
@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.black,
+    backgroundColor: colors.white,
   },
 });
 export default Loader;

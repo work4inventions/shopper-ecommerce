@@ -16,10 +16,46 @@ export const getCategories: any = createAsyncThunk(
     const query = `
     query($cursor: String) {
       collections(first: 10, after: $cursor) {
-        edges{
-          node{
+        edges {
+          node {
             id
             title
+            handle
+            image {
+              originalSrc
+            }
+            products(first: 20, after: $cursor) {
+              edges {
+                node {
+                  id
+                  title
+                  handle
+                  images(first: 1) {
+                    edges {
+                      node {
+                        originalSrc
+                      }
+                    }
+                  }
+                  compareAtPriceRange {
+                    minVariantPrice {
+                      amount
+                      currencyCode
+                    }
+                  }
+                  priceRange {
+                    minVariantPrice {
+                      amount
+                      currencyCode
+                    }
+                  }
+                }
+              }
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+            }
           }
         }
       }
