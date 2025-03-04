@@ -14,10 +14,10 @@ SplashScreen.preventAutoHideAsync();
 
 export default () => {
   const [loaded, error] = useFonts({
-    [fonts.regular]: require("../assets/fonts/futura light font.ttf"),
-    [fonts.medium]: require("../assets/fonts/futura medium bt.ttf"),
-    [fonts.bold]: require("../assets/fonts/futura bold font.ttf"),
-    [fonts.semiBold]: require("../assets/fonts/futura heavy font.ttf"),
+    [fonts.regular]: require("../assets/fonts/FuturaLT_1.ttf"),
+    [fonts.medium]: require("../assets/fonts/FuturaLT-Light.ttf"),
+    [fonts.bold]: require("../assets/fonts/FuturaLT-Bold_1.ttf"),
+    [fonts.italic]: require("../assets/fonts/FuturaLT-Italic.ttf"),
   });
 
   useEffect(() => {

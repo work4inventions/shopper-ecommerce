@@ -1,6 +1,6 @@
 export const fonts = {
-    regular: 'futura light font',
-    medium: 'futura medium bt',
-    bold: 'futura bold font.ttf',
-    semiBold: 'futura heavy font.ttf',
-  };
+  regular: "FuturaLT_1",
+  medium: "FuturaLT-Light",
+  bold: "FuturaLT-Bold_1",
+  italic: "FuturaLT-Italic",
+};
