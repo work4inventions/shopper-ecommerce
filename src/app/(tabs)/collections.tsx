@@ -1,83 +1,108 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  Image,
-  StyleSheet,
-  Pressable,
-} from "react-native";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { getProducts } from "@/src/redux/slice/getProductSlice";
+import { AntDesign, MaterialIcons } from "@expo/vector-icons";
+import { filterProducts } from "@/src/redux/slice/filterProdutSlice";
+import { RootState } from "@/src/redux/store/store";
 import Loader from "@/src/components/common/Loader";
+import Typography from "@/src/components/common/Typography";
 import { colors } from "@/src/components/constants/colors";
 import { fonts } from "@/src/components/constants/fonts";
-import { MaterialIcons } from "@expo/vector-icons";
 import { commonStyles } from "@/src/config/styles/commonStyles";
-import { RootState } from "@/src/redux/store/store";
+import Filter from "@/src/components/collection/filter";
 
 const Collections = ({ route }) => {
-  // const { categoryTitle } = route.params;
-  
   const dispatch = useDispatch();
-  const [Products, setProducts] = useState()
+  const [isOpen, setIsOpen] = useState(false);
   const { products, isLoading, error, hasNextPage, cursor } = useSelector(
-    (state: RootState) => state.getProducts
+    (state: RootState) => state.filterProducts
   );
-  const getCategoriesData = useSelector(
-    (state: RootState) => state.getCategories
-  );
-  const categorys = getCategoriesData?.data?.edges.map((item) => item.node);
-  console.log(categorys);
-  
+
   useEffect(() => {
-      // const trendingData = async () => {
-      //     const trending = await response?.payload?.edges?.find((item) => item.node.title === categoryTitle);
-      //     if (trending) {              
-      //       setProducts(trending?.node?.products);
-      //     }
-      //   };
-      //   trendingData();
-    if (products.length === 0) {
-      dispatch(getProducts());
-    }
-  }, [dispatch, products.length]);
+    // Load initial products
+    dispatch(filterProducts({
+      sortKey: "RELEVANCE",
+      filterQuery: [],
+      cursor: null
+    }));
+  }, [dispatch]);
 
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     if (hasNextPage && cursor) {
-      dispatch(getProducts(cursor));
+      dispatch(filterProducts({ 
+        sortKey: "RELEVANCE", 
+        filterQuery: [], 
+        cursor 
+      }));
     }
-  };
+  }, [dispatch, hasNextPage, cursor]);
 
-  const renderProduct = ({ item }) => {
+  const renderProduct = useCallback(({ item, index }) => {
     const imageUrl = item.node?.images?.edges?.[0]?.node?.originalSrc;
+    const price = item.node?.priceRange?.minVariantPrice?.amount;
+    const compareAtPrice = item.node?.compareAtPriceRange?.minVariantPrice?.amount;
+
     return (
-      <View style={styles.productCard}>
-        <Image source={{ uri: imageUrl }} style={styles.productImage} />
+      <View 
+        key={`product-${item.node.id}-${index}`} 
+        style={styles.productCard}
+      >
+        {imageUrl && <Image 
+          source={{ uri: imageUrl }} 
+          style={styles.productImage}
+          resizeMode="cover"
+        />}
         <Text style={styles.productName}>{item.node.title}</Text>
         <View style={{ flexDirection: "row", gap: 10, marginVertical: 8 }}>
-          <Text
-            style={[
-              styles.productPrice,
-              { textDecorationLine: "line-through" },
-            ]}
-          >
-            {`$ ${item.node.compareAtPriceRange.minVariantPrice.amount}`}
-          </Text>
-          <Text
-            style={[styles.productPrice, { color: colors.colorTextSavings }]}
-          >
-            {`$ ${item.node.priceRange.minVariantPrice.amount}`}
+          {compareAtPrice && (
+            <Text style={[styles.productPrice, { textDecorationLine: "line-through" }]}>
+              ${compareAtPrice}
+            </Text>
+          )}
+          <Text style={[styles.productPrice, { color: colors.colorTextSavings }]}>
+            ${price}
           </Text>
         </View>
-        <View style={styles.saleTag}>
-          <Text style={styles.saleTagText}>Sale</Text>
-        </View>
+        {compareAtPrice && (
+          <View style={styles.saleTag}>
+            <Text style={styles.saleTagText}>Sale</Text>
+          </View>
+        )}
       </View>
     );
-  };
+  }, []);
 
-  if (isLoading && products.length === 0) {
+  const ListFooterComponent = useMemo(() => {
+    if (isLoading) {
+      return <Loader />;
+    }
+    if (hasNextPage) {
+      return (
+        <View
+          style={{
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Pressable onPress={handleLoadMore} style={styles.loadMore}>
+            <MaterialIcons
+              name="keyboard-arrow-down"
+              size={32}
+              color={colors.black}
+            />
+          </Pressable>
+        </View>
+      );
+    }
+    return null;
+  }, [isLoading, hasNextPage, handleLoadMore]);
+
+  const keyExtractor = useCallback((item: any, index: number) => {
+    return `product-${item.node.id}-${index}`;
+  }, []);
+
+  if (isLoading && !products.length) {
     return (
       <View style={styles.loadingContainer}>
         <Loader />
@@ -89,7 +114,7 @@ const Collections = ({ route }) => {
     return (
       <View style={styles.errorContainer}>
         <Text>Error: {error}</Text>
-        <Pressable onPress={() => dispatch(getProducts())}>
+        <Pressable onPress={() => dispatch(filterProducts())}>
           <Text style={styles.retryButton}>Retry</Text>
         </Pressable>
       </View>
@@ -98,37 +123,24 @@ const Collections = ({ route }) => {
 
   return (
     <View style={commonStyles.container}>
+      <View style={styles.header}>
+        <Typography title="Products" textStyle={commonStyles.sectionTitle} />
+        <Pressable onPress={() => setIsOpen(!isOpen)} style={styles.filterBtn}>
+          <AntDesign name="filter" size={24} color={colors.primaryLight} />
+        </Pressable>
+      </View>
+      {isOpen && <Filter isOpen={isOpen} setIsOpen={setIsOpen} />}
       <FlatList
         data={products}
         renderItem={renderProduct}
-        keyExtractor={(item) => item.node.id}
+        keyExtractor={keyExtractor}
         numColumns={2}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.serviceList}
-        ListFooterComponent={
-          isLoading ? (
-            <Loader />
-          ) : hasNextPage ? (
-            <View
-              style={{
-                width: "100%",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Pressable
-                onPress={() => handleLoadMore()}
-                style={styles.loadMore}
-              >
-                <MaterialIcons
-                  name="keyboard-arrow-down"
-                  size={32}
-                  color={colors.black}
-                />
-              </Pressable>
-            </View>
-          ) : null
-        }
+        ListFooterComponent={ListFooterComponent}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        columnWrapperStyle={styles.columnWrapper}
       />
     </View>
   );
@@ -150,16 +162,26 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textDecorationLine: "underline",
   },
+  header: {
+    width: "100%",
+    height: 50,
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexDirection: "row",
+  },
+  filterBtn: {
+    backgroundColor: colors.primary,
+    padding: 10,
+  },
   serviceList: {
     gap: 20,
   },
   productCard: {
-    flex: 1,
-    margin: 10,
+    flex: 0,
+    width: '48%',
+    marginVertical: 10,
     backgroundColor: colors.primaryLight,
     alignItems: "center",
-    width: "45%",
-    height: "100%",
   },
   productImage: {
     width: "100%",
@@ -198,6 +220,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: fonts.regular,
     letterSpacing: 1,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+    paddingHorizontal: 5,
   },
 });
 

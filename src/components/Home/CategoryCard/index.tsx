@@ -1,14 +1,14 @@
 import { commonStyles } from "@/src/config/styles/commonStyles";
 import { RootState } from "@/src/redux/store/store";
 import { BlurView } from "expo-blur";
-import React from "react";
+import React, { useCallback } from "react";
 import {
   ImageBackground,
   StyleSheet,
   Text,
-  View
+  View,
+  FlatList
 } from "react-native";
-import { FlatList } from "react-native-gesture-handler";
 import { useSelector } from "react-redux";
 import { colors } from "../../constants/colors";
 import { fonts } from "../../constants/fonts";
@@ -17,19 +17,22 @@ const CategoryCard = () => {
   const getCategoriesData = useSelector(
     (state: RootState) => state.getCategories
   );
-  const categorys = getCategoriesData?.data?.edges.map((item) => item.node);
+  const categorys = getCategoriesData?.data?.edges?.map((item) => item.node) || [];
 
-  const renderCategory = ({ item }) => (
+  const renderCategory = useCallback(({ item, index }) => (
     <ImageBackground
+      key={`category-card-${item.id}-${index}`}
       source={{ uri: item.image.originalSrc }}
       resizeMode="cover"
       style={styles.productCard}
     >
       <BlurView intensity={10} tint="dark" style={styles.blurContainer}>
-         <Text style={styles.categoryText}>{item.title }</Text>
+        <Text style={styles.categoryText}>{item.title}</Text>
       </BlurView>
     </ImageBackground>
-  );
+  ), []);
+
+  if (!categorys?.length) return null;
 
   return (
     <View style={styles.container}>
@@ -38,7 +41,7 @@ const CategoryCard = () => {
         renderItem={renderCategory}
         horizontal
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
         contentContainerStyle={styles.categoryList}
       />
     </View>

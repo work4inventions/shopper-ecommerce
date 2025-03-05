@@ -1,15 +1,14 @@
 import Typography from "@/src/components/common/Typography";
 import Categories from "@/src/components/Home/Category";
 import CategoryCard from "@/src/components/Home/CategoryCard";
-import Produt from "@/src/components/Home/Product";
+import Product from "@/src/components/Home/Product";
 import Saying from "@/src/components/Home/Saying";
 import MyCarousel from "@/src/components/Home/Slider";
 import { commonStyles } from "@/src/config/styles/commonStyles";
-import { categoriesData } from "@/src/redux/slice/categoriesDataSlice";
 import { getCategories } from "@/src/redux/slice/categoriesSlice";
 import { RootState } from "@/src/redux/store/store";
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text } from "react-native";
+import { ScrollView } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
 const HomeScreen = () => {
@@ -51,13 +50,13 @@ const HomeScreen = () => {
 
       {/* Products Grid */}
       <Typography title="Trending Now" textStyle={commonStyles.sectionTitle} />
-      <Produt getCategorieData={TrendingProduct} />
+      <Product getCategorieData={TrendingProduct} />
 
       <CategoryCard />
 
       <Saying />
       <Typography title="New Arrivals" textStyle={commonStyles.sectionTitle} />
-      <Produt getCategorieData={NewArrivals} />
+      <Product getCategorieData={NewArrivals} />
     </ScrollView>
   );
 };

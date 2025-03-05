@@ -7,4 +7,5 @@ export const colors = {
     gray: '#807d7b',
     colorTextSavings: '#C20000',
     blackOpacity:'#000000a0',
+    borderColor:"#E8E8E1"
 }
