@@ -37,13 +37,16 @@ const Collections = ({ route }) => {
     }
   }, [dispatch, hasNextPage, cursor]);
 
-  const renderProduct = useCallback(({ item }) => {
+  const renderProduct = useCallback(({ item, index }) => {
     const imageUrl = item.node?.images?.edges?.[0]?.node?.originalSrc;
     const price = item.node?.priceRange?.minVariantPrice?.amount;
     const compareAtPrice = item.node?.compareAtPriceRange?.minVariantPrice?.amount;
 
     return (
-      <View style={styles.productCard}>
+      <View 
+        key={`product-${item.node.id}-${index}`} 
+        style={styles.productCard}
+      >
         {imageUrl && <Image 
           source={{ uri: imageUrl }} 
           style={styles.productImage}
@@ -95,8 +98,8 @@ const Collections = ({ route }) => {
     return null;
   }, [isLoading, hasNextPage, handleLoadMore]);
 
-  const keyExtractor = useCallback((item: any) => {
-    return item.node.id.toString();
+  const keyExtractor = useCallback((item: any, index: number) => {
+    return `product-${item.node.id}-${index}`;
   }, []);
 
   if (isLoading && !products.length) {
@@ -137,6 +140,7 @@ const Collections = ({ route }) => {
         ListFooterComponent={ListFooterComponent}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
+        columnWrapperStyle={styles.columnWrapper}
       />
     </View>
   );
@@ -173,12 +177,11 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   productCard: {
-    flex: 1,
-    margin: 10,
+    flex: 0,
+    width: '48%',
+    marginVertical: 10,
     backgroundColor: colors.primaryLight,
     alignItems: "center",
-    width: "45%",
-    height: "100%",
   },
   productImage: {
     width: "100%",
@@ -217,6 +220,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: fonts.regular,
     letterSpacing: 1,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+    paddingHorizontal: 5,
   },
 });
 

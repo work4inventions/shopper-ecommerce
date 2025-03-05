@@ -31,8 +31,6 @@ export default function Filter(props) {
     (state: RootState) => state.filterProducts
   );
 
-  //   console.log(getFilterProducts);
-
   const toggleSection = (sectionId: string) => {
     setSections(
       sections.map((section) =>
@@ -44,7 +42,7 @@ export default function Filter(props) {
   };
 
   const toggleOption = (sectionId: string, optionId: string) => {
-    // First, uncheck all options in the section
+    
     setSections(
       sections.map((section) =>
         section.id === sectionId
@@ -58,7 +56,6 @@ export default function Filter(props) {
           : section
       )
     );
-    console.log('Option toggled:', sectionId, optionId);
   };
 
   const clearAll = () => {
@@ -93,7 +90,6 @@ export default function Filter(props) {
         const selectedSort = section.options?.find(option => option.checked);
         if (selectedSort) {
           selectedFilters.sort = selectedSort.id;
-          console.log('Selected sort:', selectedSort.id);
         }
       } else if (section.id === "price" && section.priceRange) {
         selectedFilters.price = {
@@ -110,13 +106,11 @@ export default function Filter(props) {
       }
     });
 
-    console.log('Applying filters:', selectedFilters);
     await fetchFilteredProducts(selectedFilters);
   };
 
   const fetchFilteredProducts = async (filters: any) => {
-    console.log('Fetching filtered products with:', filters);
-    let sortKey = "RELEVANCE"; // default sort
+    let sortKey = "RELEVANCE";
 
     if (filters.sort) {
       switch (filters.sort) {
@@ -132,16 +126,13 @@ export default function Filter(props) {
       }
     }
 
-    console.log('Using sortKey:', sortKey);
-
     try {
       await dispatch(filterProducts({ 
         sortKey,
         filterQuery: [], 
         cursor: null 
       })).unwrap();
-      
-      // Only close if dispatch was successful
+
       setIsOpen(false);
     } catch (error) {
       console.error('Error applying filters:', error);

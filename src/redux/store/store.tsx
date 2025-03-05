@@ -6,6 +6,7 @@ import getCategoriesSlice from '../slice/categoriesSlice'
 import categoriesDataSlice from '../slice/categoriesDataSlice';
 import getProductsSlice from '../slice/getProductSlice';
 import filterProductsSlice from '../slice/filterProdutSlice'
+
 const store = configureStore({
   reducer: {
     userLogin: userLoginSlice,
