@@ -42,3 +42,48 @@ export const reviews = [
   },
 ];
 
+export const filterData =[
+  {
+    id: "sort",
+    title: "SORT",
+    expanded: true,
+    options: [
+      { id: "featured", label: "Featured", checked: true },
+      { id: "price-low-high", label: "Price, low to high", checked: false },
+      { id: "price-high-low", label: "Price, high to low", checked: false },
+      { id: "new-arrivals", label: "New Arrivals", checked: false },
+    ],
+  },
+  {
+    id: "style",
+    title: "STYLE",
+    expanded: false,
+    options: [
+      { id: "hoops", label: "Hoops", checked: true },
+      { id: "huggies", label: "Huggies", checked: false },
+      { id: "adjustable", label: "Adjustable", checked: false },
+    ],
+  },
+  { id: "color", title: "COLOR", expanded: false ,options: [
+      { id: "gold", label: "Gold", checked: true },
+      { id: "silver", label: "Silver", checked: false },
+    ],},
+  { id: "material", title: "MATERIAL", expanded: false ,options: [
+      { id: "crystals", label: "Crystals", checked: true },
+      { id: "Waterproof", label: "Waterproof", checked: false },
+    ],},
+    {
+      id: "price",
+      title: "PRICE",
+      expanded: false,
+      priceRange: [0, 1000],
+      minPrice: 0,
+      maxPrice: 1000,
+    },
+  { id: "type", title: "TYPE", expanded: false,options: [
+      { id: "earrings", label: "Earrings", checked: true },
+      { id: "rings", label: "Rings", checked: false },
+      { id: "necklaces", label: "Necklaces", checked: false },
+      { id: "bracelets", label: "Bracelets", checked: false },
+    ], },
+] 

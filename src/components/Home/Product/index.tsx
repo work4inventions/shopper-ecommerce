@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { FlatList, Image, StyleSheet, Text, View } from "react-native";
 import { colors } from "../../constants/colors";
 import { fonts } from "../../constants/fonts";
 
-const Produt = (props: any) => {
-  const { getCategorieData } = props;
-  const [productList, setProductList] = useState(); 
-  const categorys = getCategorieData?.edges?.map((item) => item.node);
+const Product = ({ getCategorieData }: any) => {
+  const categorys = getCategorieData?.edges?.map((item) => item.node) || [];
 
   const toggleLike = (id) => {
     setProductList((prev) =>
@@ -53,19 +51,26 @@ const Produt = (props: any) => {
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       <FlatList
         data={categorys}
         renderItem={renderProduct}
-        horizontal={true}
+        horizontal
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
+        contentContainerStyle={styles.listContainer}
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    marginVertical: 10,
+  },
+  listContainer: {
+    paddingHorizontal: 10,
+  },
   sectionTitle: { fontSize: 18, fontFamily: fonts.bold, margin: 15 },
   productCard: {
     flex: 1,
@@ -86,6 +91,18 @@ const styles = StyleSheet.create({
     width: "80%",
   },
   productPrice: { fontSize: 12, color: colors.gray, fontFamily: fonts.regular },
+  priceContainer: {
+    flexDirection: "row",
+    gap: 10,
+    marginVertical: 8,
+  },
+  comparePrice: {
+    textDecorationLine: "line-through",
+    color: colors.gray,
+  },
+  currentPrice: {
+    color: colors.colorTextSavings,
+  },
   likeButton: { position: "absolute", top: 5, right: 5 },
   saleTag: {
     position: "absolute",
@@ -102,4 +119,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Produt;
+export default Product;

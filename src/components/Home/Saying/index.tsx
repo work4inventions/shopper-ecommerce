@@ -1,7 +1,7 @@
 import { truncateText } from "@/src/utils/commonUtils";
 import { FontAwesome, Ionicons, SimpleLineIcons } from "@expo/vector-icons";
-import React, { useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useMemo } from "react";
+import { View, Text, StyleSheet, FlatList } from "react-native";
 import Carousel from "react-native-snap-carousel";
 import Typography from "../../common/Typography";
 import { colors } from "../../constants/colors";
@@ -12,60 +12,76 @@ const service = [
   {
     id: 1,
     text: "Unique & high quality",
-    icon: <FontAwesome name="diamond" size={24} color={colors.primary} />,
+    icon: "diamond",
+    IconComponent: FontAwesome,
   },
   {
     id: 2,
     text: "Free shipping over $35.00",
-    icon: <Ionicons name="airplane" size={24} color={colors.primary} />,
+    icon: "airplane",
+    IconComponent: Ionicons,
   },
   {
     id: 3,
     text: "100% secure checkout",
-    icon: <SimpleLineIcons name="lock" size={24} color={colors.primary} />,
+    icon: "lock",
+    IconComponent: SimpleLineIcons,
   },
   {
     id: 4,
     text: "1 year jewelry warranty",
-    icon: (
-      <Ionicons
-        name="shield-checkmark-outline"
-        size={24}
-        color={colors.primary}
-      />
-    ),
+    icon: "shield-checkmark-outline",
+    IconComponent: Ionicons,
   },
 ];
 
 export default function Saying() {
-  const renderItem = ({ item }) => (
+  const renderItem = useCallback(({ item }) => (
     <View style={styles.slide}>
       <Text style={styles.reviewText}>"{truncateText(item.text, 160)}"</Text>
       <Text style={styles.author}>{item.author}</Text>
       <View style={styles.starContainer}>
-        {[...Array(item.rating)].map((_, i) => (
-          <Ionicons key={i} name="star" size={16} color={colors.black} />
+        {Array.from({ length: item.rating }).map((_, i) => (
+          <Ionicons key={`star-${i}`} name="star" size={16} color={colors.black} />
         ))}
       </View>
     </View>
-  );
+  ), []);
 
-  const renderService = ({ item }) => (
-    <View style={styles.serviceMain} onPress={() => console.log(item.text)}>
-      {item.icon}
-      <Text style={styles.serviceText}>{item.text}</Text>
-    </View>
-  );
+  const renderService = useCallback(({ item }) => {
+    const IconComponent = item.IconComponent;
+    return (
+      <View style={styles.serviceMain}>
+        <IconComponent name={item.icon} size={24} color={colors.primary} />
+        <Text style={styles.serviceText}>{item.text}</Text>
+      </View>
+    );
+  }, []);
+
+  const keyExtractor = useCallback((item) => item.id.toString(), []);
+
+  const ServiceList = useMemo(() => (
+    <FlatList
+      data={service}
+      renderItem={renderService}
+      numColumns={2}
+      showsHorizontalScrollIndicator={false}
+      keyExtractor={keyExtractor}
+      contentContainerStyle={styles.serviceList}
+      columnWrapperStyle={styles.columnWrapper}
+      scrollEnabled={false}
+    />
+  ), [renderService]);
 
   return (
-    <>
+    <View>
       <View style={styles.container}>
         <Typography textStyle={styles.header} title="WHAT PEOPLE ARE SAYING" />
         <View style={styles.sliderContainer}>
           <Carousel
             data={reviews}
             renderItem={renderItem}
-            layout={"stack"}
+            layout="stack"
             sliderWidth={350}
             itemWidth={280}
             loop
@@ -73,16 +89,8 @@ export default function Saying() {
         </View>
         <Text style={styles.footer}>OVER 700,000+ HAPPY CUSTOMERS</Text>
       </View>
-      <FlatList
-        data={service}
-        renderItem={renderService}
-        numColumns={2}
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.serviceList}
-        columnWrapperStyle={styles.columnWrapper}
-      />
-    </>
+      {ServiceList}
+    </View>
   );
 }
 

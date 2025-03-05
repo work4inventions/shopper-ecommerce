@@ -1,7 +1,7 @@
 import { commonStyles } from "@/src/config/styles/commonStyles";
 import { RootState } from "@/src/redux/store/store";
 import { useNavigation } from "expo-router";
-import React from "react";
+import React, { useCallback } from "react";
 import {
   FlatList,
   Image,
@@ -19,24 +19,24 @@ const Categories = () => {
   const getCategoriesData = useSelector(
     (state: RootState) => state.getCategories
   );
-  const categorys = getCategoriesData?.data?.edges.map((item) => item.node);
+  const categorys = getCategoriesData?.data?.edges?.map((item) => item.node) || [];
 
-  const renderCategory = ({ item }) => (
+  const renderCategory = useCallback(({ item, index }) => (
     <Pressable
+      key={`category-${item.id}-${index}`}
       style={styles.categoryItem}
-      onPress={() => navigation.navigate(SCREENS.COLLECTIONS
-      //   , {
-      //   categoryTitle: item.title,
-      // }
-    )}
+      onPress={() => navigation.navigate(SCREENS.COLLECTIONS)}
     >
       <Image
         source={{ uri: item.image.originalSrc }}
         style={styles.categoryIcon}
+        resizeMode="cover"
       />
       <Text style={styles.categoryText}>{item.title}</Text>
     </Pressable>
-  );
+  ), [navigation]);
+
+  if (!categorys?.length) return null;
 
   return (
     <View style={styles.container}>
@@ -46,7 +46,7 @@ const Categories = () => {
         renderItem={renderCategory}
         horizontal
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
         contentContainerStyle={styles.categoryList}
       />
     </View>
