@@ -1,16 +1,16 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { commonStyles } from "@/src/config/styles/commonStyles";
+import { filterProducts } from "@/src/redux/slice/filterProdutSlice";
+import { RootState } from "@/src/redux/store/store";
 import { Ionicons, Octicons } from "@expo/vector-icons";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
+import React, { useState } from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
-import { ACCESS_TOKEN, API_URL } from "@/src/utils/commonUtils";
-import { filterData } from "../constants/data";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/src/redux/store/store";
-import { filterProducts } from "@/src/redux/slice/filterProdutSlice";
-import { colors } from "../constants/colors";
-import { fonts } from "../constants/fonts";
 import Typography from "../common/Typography";
+import { colors } from "../constants/colors";
+import { filterData } from "../constants/data";
+import { fonts } from "../constants/fonts";
 
 type FilterSection = {
   id: string;
@@ -42,7 +42,6 @@ export default function Filter(props) {
   };
 
   const toggleOption = (sectionId: string, optionId: string) => {
-    
     setSections(
       sections.map((section) =>
         section.id === sectionId
@@ -50,7 +49,8 @@ export default function Filter(props) {
               ...section,
               options: section.options?.map((option) => ({
                 ...option,
-                checked: option.id === optionId ? !option.checked : false,
+                checked:
+                  option.id === optionId ? !option.checked : option.checked,
               })),
             }
           : section
@@ -87,7 +87,7 @@ export default function Filter(props) {
 
     sections.forEach((section) => {
       if (section.id === "sort") {
-        const selectedSort = section.options?.find(option => option.checked);
+        const selectedSort = section.options?.find((option) => option.checked);
         if (selectedSort) {
           selectedFilters.sort = selectedSort.id;
         }
@@ -105,8 +105,16 @@ export default function Filter(props) {
         }
       }
     });
+    console.log([selectedFilters]);
 
-    await fetchFilteredProducts(selectedFilters);
+    // await dispatch(
+    //   filterProducts({
+    //     sortKey,
+    //     filterQuery: [],
+    //     cursor: null,
+    //   })
+    // )
+    // await fetchFilteredProducts(selectedFilters);
   };
 
   const fetchFilteredProducts = async (filters: any) => {
@@ -127,15 +135,17 @@ export default function Filter(props) {
     }
 
     try {
-      await dispatch(filterProducts({ 
-        sortKey,
-        filterQuery: [], 
-        cursor: null 
-      })).unwrap();
+      await dispatch(
+        filterProducts({
+          sortKey,
+          filterQuery: [],
+          cursor: null,
+        })
+      ).unwrap();
 
       setIsOpen(false);
     } catch (error) {
-      console.error('Error applying filters:', error);
+      console.error("Error applying filters:", error);
     }
   };
 
@@ -145,7 +155,7 @@ export default function Filter(props) {
     <View style={styles.overlay}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Filter</Text>
+          <Typography title="Filter" textStyle={commonStyles.sectionTitle} />
           <TouchableOpacity
             onPress={() => setIsOpen(false)}
             style={styles.closeButton}
@@ -165,7 +175,11 @@ export default function Filter(props) {
                 onPress={() => toggleSection(section.id)}
                 style={styles.sectionHeader}
               >
-                <Text style={styles.sectionTitle}>{section.title}</Text>
+                <Typography
+                  title={section.title}
+                  textStyle={styles.sectionTitle}
+                  size={14}
+                />
                 <Ionicons
                   name={section.expanded ? "chevron-up" : "chevron-down"}
                   size={20}
@@ -197,8 +211,12 @@ export default function Filter(props) {
                         )}
                       </View>
                       <Typography
-                        textStyle={{ fontFamily: fonts.regular }}
+                        textStyle={{
+                          fontFamily: fonts.regular,
+                          letterSpacing: 1,
+                        }}
                         title={option.label}
+                        size={14}
                       ></Typography>
                     </TouchableOpacity>
                   )}
@@ -207,7 +225,7 @@ export default function Filter(props) {
 
               {section.id === "price" && section.expanded && (
                 <View style={styles.priceRange}>
-                  <Text>Price Range</Text>
+                  <Typography title="Price Range" size={14} />
                   <MultiSlider
                     values={section.priceRange || [0, 60]}
                     min={section.minPrice || 0}
@@ -215,15 +233,33 @@ export default function Filter(props) {
                     onValuesChange={handlePriceChange}
                     sliderLength={250}
                     step={10}
-                    customMarker={ () =>(<Octicons name='dot-fill' size={32}/>)}
+                    customMarker={() => (
+                      <Octicons
+                        name="dot-fill"
+                        size={32}
+                        color={colors.primary}
+                      />
+                    )}
                     allowOverlap={false}
                     snapped
+                    selectedStyle={{
+                      backgroundColor: colors.primaryLight,
+                    }}
+                    unselectedStyle={{
+                      backgroundColor: colors.gray,
+                    }}
                   />
 
                   <View style={styles.priceTextContainer}>
-                    <Text>${section.priceRange?.[0]}</Text>
-                    <Text>to</Text>
-                    <Text>${section.priceRange?.[1]}</Text>
+                    <Typography
+                      title={`$ ${section.priceRange?.[0]}`}
+                      size={14}
+                    />
+                    <Typography title="to" size={14} />
+                    <Typography
+                      title={`$ ${section.priceRange?.[1]}`}
+                      size={14}
+                    />
                   </View>
                 </View>
               )}
@@ -234,10 +270,10 @@ export default function Filter(props) {
         <View style={styles.footer}>
           <TouchableOpacity onPress={clearAll} style={styles.clearButton}>
             <Ionicons name="trash-bin" size={20} color="black" />
-            <Text>Clear all</Text>
+            <Typography title="Clear all" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
-            <Text style={styles.applyButtonText}>Apply</Text>
+            <Typography title="Apply" textStyle={styles.applyButtonText} />
           </TouchableOpacity>
         </View>
       </View>
@@ -272,10 +308,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.borderColor,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: "500",
-  },
   closeButton: {
     padding: 8,
   },
@@ -307,13 +339,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginVertical: 8,
-    marginLeft:10,
+    marginLeft: 10,
   },
   optionCircle: {
     height: 24,
     width: 24,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: colors.borderColor,
     marginRight: 12,
     justifyContent: "center",
     alignItems: "center",
@@ -335,20 +367,17 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: "#ddd",
+    borderTopColor: colors.borderColor,
   },
   clearButton: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 5,
   },
   applyButton: {
-    backgroundColor: "black",
+    backgroundColor: colors.black,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 8,
   },
-  applyButtonText: {
-    color: "white",
-    fontWeight: "500",
-  },
+  applyButtonText: { color: colors.white, fontFamily: fonts.regular },
 });

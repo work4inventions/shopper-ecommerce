@@ -7,15 +7,16 @@ import { commonStyles } from "@/src/config/styles/commonStyles";
 import { filterProducts } from "@/src/redux/slice/filterProdutSlice";
 import { RootState } from "@/src/redux/store/store";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, Image, Pressable, StyleSheet, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
-const Collections = () => {
+const CollectionsData = () => {
   const { item } = useLocalSearchParams();
   const parsedItem = item ? JSON.parse(item) : null;
-  // console.log(parsedItem.title);
+  console.log(parsedItem?.title);
+
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const { products, isLoading, error, hasNextPage, cursor } = useSelector(
@@ -52,16 +53,7 @@ const Collections = () => {
       item.node?.compareAtPriceRange?.minVariantPrice?.amount;
 
     return (
-      <Pressable
-        key={`product-${item.node.id}-${index}`}
-        style={styles.productCard}
-        onPress={() =>
-          router.replace({
-            pathname: "/productDetail",
-            params: { item: JSON.stringify(item.node) },
-          })
-        }
-      >
+      <View key={`product-${item.node.id}-${index}`} style={styles.productCard}>
         {imageUrl && (
           <Image
             source={{ uri: imageUrl }}
@@ -93,7 +85,7 @@ const Collections = () => {
             <Typography title="Sale" textStyle={styles.saleTagText} />
           </View>
         )}
-      </Pressable>
+      </View>
     );
   }, []);
 
@@ -251,4 +243,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Collections;
+export default CollectionsData;

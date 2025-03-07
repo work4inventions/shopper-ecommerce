@@ -1,14 +1,14 @@
-import { Link, Stack } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
-
+import { Stack } from "expo-router";
+import { StyleSheet, View } from "react-native";
+import Typography from "../components/common/Typography";
 
 export default function NotFoundScreen() {
   return (
     <>
-      <Stack.Screen options={{ title: 'Oops!' }} />
-        <View>
-          <Text>NotFoundScreen</Text>
-        </View>
+      <Stack.Screen options={{ title: "Oops!" }} />
+      <View>
+        <Typography title="NotFoundScreen" />
+      </View>
     </>
   );
 }
@@ -16,8 +16,8 @@ export default function NotFoundScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 20,
   },
   link: {

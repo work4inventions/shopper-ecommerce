@@ -9,4 +9,6 @@ export const SCREENS = {
   COLLECTIONS: "collections",
   SEARCH: "search",
   CART: "cart",
+  PRODUCT: "product",
+  PRODUCT_DETAIL: "productDetail",
 };
