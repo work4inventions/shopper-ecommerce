@@ -9,6 +9,7 @@ import { tabItems } from "@/src/components/constants/navigation";
 export default function TabLayout() {
   return (
     <Tabs
+      initialRouteName={tabItems[0].name}
       screenOptions={{
         tabBarHideOnKeyboard: true,
         tabBarShowLabel: false,
@@ -58,17 +59,10 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  iconImg: {
-    width: 20,
-    height: 20,
-  },
   tabItemContainer: {
     alignItems: "center",
     height: 40,
     width: 60,
     marginTop: 20,
-  },
-  tabText: {
-    fontSize: 10,
   },
 });

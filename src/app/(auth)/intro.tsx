@@ -6,7 +6,6 @@ const Intro = () => {
   return (
     <View>
       <Text>Intro</Text>
-            <Link href="login">Login</Link>
     </View>
   )
 }

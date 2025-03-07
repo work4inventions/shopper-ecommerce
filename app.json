@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Shopper",
-    "slug": "Shopper",
+    "slug": "shopper",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
@@ -36,6 +36,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "fe630522-ba5d-4668-8921-4281ab980cc0"
+      }
+    },
+    "owner": "work4inventions"
   }
 }

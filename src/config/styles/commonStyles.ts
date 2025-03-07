@@ -7,8 +7,7 @@ export const commonStyles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontFamily: fonts.bold,
-    marginBottom: 10,
+    marginVertical: 10,
     marginLeft: 15,
-    marginTop:15
   },
 });

@@ -1,6 +1,6 @@
+import { ACCESS_TOKEN, API_URL } from "@/src/utils/commonUtils";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import AxiosInstance from "../../authServices/axiosInstance";
-import { ACCESS_TOKEN, API_URL } from "@/src/utils/commonUtils";
 
 interface initialValType {
   isLoading: boolean;
@@ -30,6 +30,7 @@ export const filterProducts: any = createAsyncThunk(
             node {
               id
               title
+              description
               images(first: 1) {
                 edges {
                   node {
@@ -60,9 +61,9 @@ export const filterProducts: any = createAsyncThunk(
     try {
       let response = await AxiosInstance.post(
         `${API_URL}`,
-        { 
+        {
           query,
-          variables: { cursor }
+          variables: { cursor },
         },
         {
           headers: {
@@ -71,7 +72,7 @@ export const filterProducts: any = createAsyncThunk(
           },
         }
       );
-      
+
       return response.data.data.products;
     } catch (error: any) {
       if (error.response) {
@@ -114,7 +115,7 @@ const filterProductsSlice = createSlice({
       .addCase(filterProducts.fulfilled, (state, action) => {
         if (!action.payload) return;
         const { edges, pageInfo } = action.payload;
-        
+
         if (!state.cursor) {
           // First load or new filter
           state.products = edges || [];
@@ -122,13 +123,13 @@ const filterProductsSlice = createSlice({
           // Loading more - append products
           state.products = [...state.products, ...(edges || [])];
         }
-        
+
         state.hasNextPage = pageInfo?.hasNextPage || false;
         state.cursor = pageInfo?.endCursor || null;
         state.isLoading = false;
       })
       .addCase(filterProducts.rejected, (state, action) => {
-        console.error('Reducer rejected:', action.error);
+        console.error("Reducer rejected:", action.error);
         state.isLoading = false;
         state.isError = true;
         state.errorMessage = action.error.message || "Something went wrong";

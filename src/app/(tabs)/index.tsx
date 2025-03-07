@@ -8,7 +8,7 @@ import { commonStyles } from "@/src/config/styles/commonStyles";
 import { getCategories } from "@/src/redux/slice/categoriesSlice";
 import { RootState } from "@/src/redux/store/store";
 import React, { useEffect, useState } from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
 const HomeScreen = () => {
@@ -49,14 +49,20 @@ const HomeScreen = () => {
       <Categories />
 
       {/* Products Grid */}
+      <View style={{marginVertical:10}}>
       <Typography title="Trending Now" textStyle={commonStyles.sectionTitle} />
       <Product getCategorieData={TrendingProduct} />
+      </View>
 
       <CategoryCard />
 
       <Saying />
+
+      <View style={{marginVertical:10,marginBottom:40}}>
       <Typography title="New Arrivals" textStyle={commonStyles.sectionTitle} />
       <Product getCategorieData={NewArrivals} />
+      </View>
+
     </ScrollView>
   );
 };

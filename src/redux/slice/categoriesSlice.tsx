@@ -9,7 +9,6 @@ interface initialValType {
   errorMessage: string;
 }
 
-
 export const getCategories: any = createAsyncThunk(
   "getCategories",
   async () => {
@@ -29,8 +28,9 @@ export const getCategories: any = createAsyncThunk(
                 node {
                   id
                   title
+                  description
                   handle
-                  images(first: 1) {
+                  images(first: 10) {
                     edges {
                       node {
                         originalSrc

@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
-import React from 'react';
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
-import { colors } from '../../constants/colors';
+import React from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { colors } from "../../constants/colors";
 
 const Loader = () => {
   return (
@@ -13,9 +13,8 @@ const Loader = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.white,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 export default Loader;

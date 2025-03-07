@@ -1,7 +1,9 @@
-import React, { useState, useCallback } from "react";
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import React from "react";
+import { FlatList, Image, Pressable, StyleSheet, View } from "react-native";
+import Typography from "../../common/Typography";
 import { colors } from "../../constants/colors";
 import { fonts } from "../../constants/fonts";
+import { router } from "expo-router";
 
 const Product = ({ getCategorieData }: any) => {
   const categorys = getCategorieData?.edges?.map((item) => item.node) || [];
@@ -17,24 +19,30 @@ const Product = ({ getCategorieData }: any) => {
   const renderProduct = ({ item }) => {
     const imageUrl = item.images?.edges?.[0]?.node?.originalSrc;
     return (
-      <View style={styles.productCard}>
+      <Pressable style={styles.productCard}  onPress={() => router.replace({
+          pathname: "/productDetail",
+          params: { item: JSON.stringify(item) },
+        })}>
         <Image source={{ uri: imageUrl }} style={styles.productImage} />
-        <Text style={styles.productName}>{item.title}</Text>
+        <Typography title={item.title} textStyle={styles.productName} />
         <View style={{ flexDirection: "row", gap: 10, marginVertical: 8 }}>
-          <Text
-            style={[
+          <Typography
+            title={`$ ${item.compareAtPriceRange.minVariantPrice.amount} `}
+            textStyle={[
               styles.productPrice,
               { textDecorationLine: "line-through" },
             ]}
-          >{`$ ${item.compareAtPriceRange.minVariantPrice.amount} `}</Text>
-          <Text
-            style={[styles.productPrice, { color: colors.colorTextSavings }]}
-          >
-            {`$ ${item.priceRange.minVariantPrice.amount} `}
-          </Text>
+          />
+          <Typography
+            title={`$ ${item.priceRange.minVariantPrice.amount} `}
+            textStyle={[
+              styles.productPrice,
+              { color: colors.colorTextSavings },
+            ]}
+          />
         </View>
         <View style={styles.saleTag}>
-          <Text style={styles.saleTagText}>{"Sale"}</Text>
+          <Typography title="Sale" textStyle={styles.saleTagText} />
         </View>
         {/* <TouchableOpacity
           onPress={() => toggleLike(item.id)}
@@ -46,12 +54,12 @@ const Product = ({ getCategorieData }: any) => {
             color="red"
           />
         </TouchableOpacity> */}
-      </View>
+      </Pressable>
     );
   };
 
   return (
-    <View style={styles.container}>
+    <View>
       <FlatList
         data={categorys}
         renderItem={renderProduct}
@@ -65,9 +73,6 @@ const Product = ({ getCategorieData }: any) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginVertical: 10,
-  },
   listContainer: {
     paddingHorizontal: 10,
   },

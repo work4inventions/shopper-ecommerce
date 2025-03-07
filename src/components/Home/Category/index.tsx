@@ -1,46 +1,48 @@
 import { commonStyles } from "@/src/config/styles/commonStyles";
 import { RootState } from "@/src/redux/store/store";
-import { useNavigation } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
-import {
-  FlatList,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, Image, Pressable, StyleSheet, View } from "react-native";
 import { useSelector } from "react-redux";
+import Typography from "../../common/Typography";
 import { fonts } from "../../constants/fonts";
-import { SCREENS } from "../../constants/routes";
 
 const Categories = () => {
-  const navigation = useNavigation();
+  const router = useRouter();
   const getCategoriesData = useSelector(
     (state: RootState) => state.getCategories
   );
-  const categorys = getCategoriesData?.data?.edges?.map((item) => item.node) || [];
+  const categorys =
+    getCategoriesData?.data?.edges?.map((item) => item.node) || [];
 
-  const renderCategory = useCallback(({ item, index }) => (
-    <Pressable
-      key={`category-${item.id}-${index}`}
-      style={styles.categoryItem}
-      onPress={() => navigation.navigate(SCREENS.COLLECTIONS)}
-    >
-      <Image
-        source={{ uri: item.image.originalSrc }}
-        style={styles.categoryIcon}
-        resizeMode="cover"
-      />
-      <Text style={styles.categoryText}>{item.title}</Text>
-    </Pressable>
-  ), [navigation]);
+  const renderCategory = useCallback(
+    ({ item, index }) => (
+      <Pressable
+        key={`category-${item.id}-${index}`}
+        style={styles.categoryItem}
+        onPress={() =>
+          router.replace({
+            pathname: "/collections",
+            params: { item: JSON.stringify(item) },
+          })
+        }
+      >
+        <Image
+          source={{ uri: item.image.originalSrc }}
+          style={styles.categoryIcon}
+          resizeMode="cover"
+        />
+        <Typography textStyle={styles.categoryText} title={item.title} />
+      </Pressable>
+    ),
+    [router]
+  );
 
   if (!categorys?.length) return null;
 
   return (
     <View style={styles.container}>
-      <Text style={commonStyles.sectionTitle}>Categories</Text>
+      <Typography textStyle={commonStyles.sectionTitle} title={"Categories"} />
       <FlatList
         data={categorys}
         renderItem={renderCategory}

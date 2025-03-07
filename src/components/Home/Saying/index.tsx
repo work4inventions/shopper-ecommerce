@@ -1,12 +1,12 @@
 import { truncateText } from "@/src/utils/commonUtils";
 import { FontAwesome, Ionicons, SimpleLineIcons } from "@expo/vector-icons";
 import React, { useCallback, useMemo } from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 import Carousel from "react-native-snap-carousel";
 import Typography from "../../common/Typography";
 import { colors } from "../../constants/colors";
-import { fonts } from "../../constants/fonts";
 import { reviews } from "../../constants/data";
+import { fonts } from "../../constants/fonts";
 
 const service = [
   {
@@ -36,42 +36,56 @@ const service = [
 ];
 
 export default function Saying() {
-  const renderItem = useCallback(({ item }) => (
-    <View style={styles.slide}>
-      <Text style={styles.reviewText}>"{truncateText(item.text, 160)}"</Text>
-      <Text style={styles.author}>{item.author}</Text>
-      <View style={styles.starContainer}>
-        {Array.from({ length: item.rating }).map((_, i) => (
-          <Ionicons key={`star-${i}`} name="star" size={16} color={colors.black} />
-        ))}
+  const renderItem = useCallback(
+    ({ item }) => (
+      <View style={styles.slide}>
+        <Typography
+          title={`"${truncateText(item.text, 160)}"`}
+          textStyle={styles.reviewText}
+        />
+        <Typography title={item.author} textStyle={styles.author} />
+        <View style={styles.starContainer}>
+          {Array.from({ length: item.rating }).map((_, i) => (
+            <Ionicons
+              key={`star-${i}`}
+              name="star"
+              size={16}
+              color={colors.black}
+            />
+          ))}
+        </View>
       </View>
-    </View>
-  ), []);
+    ),
+    []
+  );
 
   const renderService = useCallback(({ item }) => {
     const IconComponent = item.IconComponent;
     return (
       <View style={styles.serviceMain}>
         <IconComponent name={item.icon} size={24} color={colors.primary} />
-        <Text style={styles.serviceText}>{item.text}</Text>
+        <Typography title={item.text} textStyle={styles.serviceText} />
       </View>
     );
   }, []);
 
   const keyExtractor = useCallback((item) => item.id.toString(), []);
 
-  const ServiceList = useMemo(() => (
-    <FlatList
-      data={service}
-      renderItem={renderService}
-      numColumns={2}
-      showsHorizontalScrollIndicator={false}
-      keyExtractor={keyExtractor}
-      contentContainerStyle={styles.serviceList}
-      columnWrapperStyle={styles.columnWrapper}
-      scrollEnabled={false}
-    />
-  ), [renderService]);
+  const ServiceList = useMemo(
+    () => (
+      <FlatList
+        data={service}
+        renderItem={renderService}
+        numColumns={2}
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={keyExtractor}
+        contentContainerStyle={styles.serviceList}
+        columnWrapperStyle={styles.columnWrapper}
+        scrollEnabled={false}
+      />
+    ),
+    [renderService]
+  );
 
   return (
     <View>
@@ -87,7 +101,10 @@ export default function Saying() {
             loop
           />
         </View>
-        <Text style={styles.footer}>OVER 700,000+ HAPPY CUSTOMERS</Text>
+        <Typography
+          textStyle={styles.footer}
+          title="OVER 700,000+ HAPPY CUSTOMERS"
+        />
       </View>
       {ServiceList}
     </View>
