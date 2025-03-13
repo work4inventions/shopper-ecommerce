@@ -29,7 +29,6 @@ export default function ProductDetail() {
       const result = await Share.share({
         message: "Check out this awesome content!",
       });
-      console.log(result);
     } catch (error) {
       console.error("Error sharing:", error);
     }
@@ -53,7 +52,7 @@ export default function ProductDetail() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.iconButton}
-          onPress={() => router.replace("/collections")}
+          onPress={() => router.back()}
         >
           <MaterialIcons
             name="arrow-back-ios"

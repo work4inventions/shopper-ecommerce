@@ -16,7 +16,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.Shopper"
     },
     "web": {
       "bundler": "metro",
@@ -29,7 +30,9 @@
         "expo-splash-screen",
         {
           "image": "./src/assets/images/splash.png",
-          "resizeMode": "contain"
+          "imageWidth": "100%",
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
         }
       ],
       "expo-font"

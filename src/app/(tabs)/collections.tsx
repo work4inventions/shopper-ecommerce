@@ -1,49 +1,231 @@
-import Filter from "@/src/components/collection/filter";
 import Loader from "@/src/components/common/Loader";
 import Typography from "@/src/components/common/Typography";
 import { colors } from "@/src/components/constants/colors";
+import { filterData } from "@/src/components/constants/data";
 import { fonts } from "@/src/components/constants/fonts";
 import { commonStyles } from "@/src/config/styles/commonStyles";
-import { filterProducts } from "@/src/redux/slice/filterProdutSlice";
+import {
+  categoriesData,
+  resetCategoriesData,
+} from "@/src/redux/slice/categoriesDataSlice";
+import {
+  filterProducts,
+  resetFilterProducts,
+} from "@/src/redux/slice/filterproductsSlice";
 import { RootState } from "@/src/redux/store/store";
-import { AntDesign, MaterialIcons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { FlatList, Image, Pressable, StyleSheet, View } from "react-native";
+import { getReverseValue, getSortKey } from "@/src/utils/commonUtils";
+import {
+  AntDesign,
+  Ionicons,
+  MaterialIcons,
+  Octicons,
+} from "@expo/vector-icons";
+import MultiSlider from "@ptomasroos/react-native-multi-slider";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useMemo, useState } from "react";
+import {
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  TouchableOpacity,
+  View
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
+type FilterSection = {
+  id: string;
+  title: string;
+  expanded: boolean;
+  options?: FilterOption[];
+  priceRange?: [number, number];
+  minPrice?: number;
+  maxPrice?: number;
+};
+
 const Collections = () => {
-  const { item } = useLocalSearchParams();
-  const parsedItem = item ? JSON.parse(item) : null;
-  // console.log(parsedItem.title);
+  const { id } = useLocalSearchParams();
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
-  const { products, isLoading, error, hasNextPage, cursor } = useSelector(
-    (state: RootState) => state.filterProducts
+  const [activeCategoryId, setActiveCategoryId] = useState(null);
+  const [filterValue, setFilterValue] = useState();
+  const [sections, setSections] = useState<FilterSection[]>();
+  const getCategoriesData = useSelector(
+    (state: RootState) => state.getCategories
+  );
+  const {
+    products,
+    isLoading: isCategoriesLoading,
+    hasNextPage: hasCategoriesNextPage,
+    cursor: categoriesCursor,
+  } = useSelector((state: RootState) => state.categoriesData);
+
+  const {
+    filter,
+    isLoading: isFilterLoading,
+    hasNextPage: hasFilterNextPage,
+    cursor: filterCursor,
+  } = useSelector((state: RootState) => state.filterProducts);
+  const isLoading = isCategoriesLoading || isFilterLoading;
+  const hasNextPage = hasCategoriesNextPage || hasFilterNextPage;
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        dispatch(resetCategoriesData());
+
+        let selectedId = id;
+        if (id) {
+          await dispatch(categoriesData({ id, cursor: null }));
+          setActiveCategoryId(id);
+        } else {
+          const categories =
+            getCategoriesData?.data?.edges?.map((item) => item.node) || [];
+
+          if (categories.length > 0) {
+            selectedId = categories[0].id;
+            await dispatch(categoriesData({ id: selectedId, cursor: null }));
+            setActiveCategoryId(selectedId);
+          }
+        }
+        const categories =
+          getCategoriesData?.data?.edges?.map((item) => ({
+            id: item.node.id,
+            label: item.node.title,
+            checked: item.node.id === selectedId,
+          })) || [];
+
+        const updatedFilterData = filterData?.map((filter) =>
+          filter.id === "type" ? { ...filter, options: categories } : filter
+        );
+
+        setSections(updatedFilterData);
+      };
+
+      fetchData();
+    }, [id, getCategoriesData, filterData])
   );
 
-  useEffect(() => {
-    // Load initial products
+  const toggleSection = (sectionId: string) => {
+    setSections(
+      sections.map((section) =>
+        section.id === sectionId
+          ? { ...section, expanded: !section.expanded }
+          : section
+      )
+    );
+  };
+
+  const toggleOption = (sectionId: string, optionId: string) => {
+    setSections(
+      sections.map((section) =>
+        section.id === sectionId
+          ? {
+              ...section,
+              options: section.options?.map((option) => ({
+                ...option,
+                checked: option.id === optionId,
+              })),
+            }
+          : section
+      )
+    );
+  };
+  
+  const clearAll = async () => {
+    await dispatch(resetFilterProducts());
+    await dispatch(resetCategoriesData());
+    const categories = await getCategoriesData?.data?.edges?.map((item)=> item.node) || [];   
+    setIsOpen(false)
+    
+    if (categories.length > 0) {
+      await dispatch(categoriesData({ id: categories[0]?.id, cursor: null }));
+      setActiveCategoryId(categories[0].id);
+    } else {
+      console.warn("No categories found.");
+    }
+
+    setSections(
+      sections.map((section) => ({
+        ...section,
+        options: section.options?.map((option) => ({
+          ...option,
+          checked: false,
+        })),
+        priceRange:
+          section.id === "price"
+            ? [section.minPrice || 0, section.maxPrice || 60]
+            : section.priceRange,
+      }))
+    );
+  };
+
+  const handlePriceChange = (values: number[]) => {
+    setSections(
+      sections.map((section) =>
+        section.id === "price" ? { ...section, priceRange: values } : section
+      )
+    );
+  };
+
+  const applyFilters = async () => {
+    const selectedFilters: any = {};
+
+    sections.forEach((section) => {
+      if (section.id === "sort") {
+        const selectedSort = section.options?.find((option) => option.checked);
+        if (selectedSort) {
+          selectedFilters.sort = selectedSort.id;
+        }
+      } else if (section.id === "price" && section.priceRange) {
+        selectedFilters.price = {
+          min: section.priceRange[0],
+          max: section.priceRange[1],
+        };
+      } else if (section.options) {
+        const selectedOptions = section.options
+          .filter((option) => option.checked)
+          .map((option) => ({ id: option.id, label: option.label }));
+
+        if (selectedOptions.length > 0) {
+          setActiveCategoryId(selectedOptions[0].id);
+          selectedFilters[section.id] = selectedOptions;
+        }
+      }
+    });
+
+    const sortKey = getSortKey(selectedFilters.sort);
+    const reverse = getReverseValue(selectedFilters.sort);
+
+    setFilterValue(selectedFilters);
+    setIsOpen(false);
+    dispatch(resetFilterProducts());
     dispatch(
       filterProducts({
-        sortKey: "RELEVANCE",
-        filterQuery: [],
+        filter: { ...selectedFilters, sortKey, reverse },
         cursor: null,
       })
     );
-  }, [dispatch]);
+  };
 
   const handleLoadMore = useCallback(() => {
-    if (hasNextPage && cursor) {
-      dispatch(
-        filterProducts({
-          sortKey: "RELEVANCE",
-          filterQuery: [],
-          cursor,
-        })
-      );
+    if (activeCategoryId) {
+      if (hasCategoriesNextPage && categoriesCursor) {
+        dispatch(
+          categoriesData({ id: activeCategoryId, cursor: categoriesCursor })
+        );
+      } else if (hasFilterNextPage && filterCursor) {
+        dispatch(filterProducts({ filter: filterValue, cursor: filterCursor }));
+      }
     }
-  }, [dispatch, hasNextPage, cursor]);
+  }, [
+    hasCategoriesNextPage,
+    categoriesCursor,
+    hasFilterNextPage,
+    filterCursor,
+    dispatch,
+    activeCategoryId,
+  ]);
 
   const renderProduct = useCallback(({ item, index }) => {
     const imageUrl = item.node?.images?.edges?.[0]?.node?.originalSrc;
@@ -56,7 +238,7 @@ const Collections = () => {
         key={`product-${item.node.id}-${index}`}
         style={styles.productCard}
         onPress={() =>
-          router.replace({
+          router.push({
             pathname: "/productDetail",
             params: { item: JSON.stringify(item.node) },
           })
@@ -135,16 +317,6 @@ const Collections = () => {
     );
   }
 
-  if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <Pressable onPress={() => dispatch(filterProducts())}>
-          <Typography title="Retry" textStyle={styles.retryButton} />
-        </Pressable>
-      </View>
-    );
-  }
-
   return (
     <View style={commonStyles.container}>
       <View style={styles.header}>
@@ -153,9 +325,178 @@ const Collections = () => {
           <AntDesign name="filter" size={24} color={colors.primaryLight} />
         </Pressable>
       </View>
-      {isOpen && <Filter isOpen={isOpen} setIsOpen={setIsOpen} />}
+
       <FlatList
-        data={products}
+        data={getCategoriesData?.data?.edges}
+        keyExtractor={(item) => item.node.id}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        renderItem={({ item }) => {
+          const isActive = activeCategoryId === item?.node?.id;
+          return (
+            <Pressable
+              style={[
+                styles.categoryItem,
+                isActive && styles.activeCategoryItem,
+              ]}
+              onPress={async () => {                
+                setActiveCategoryId(item?.node?.id);
+                await dispatch(resetFilterProducts());
+                await dispatch(resetCategoriesData());
+                await dispatch(categoriesData({ id: item?.node?.id, cursor: null }));
+              }}
+            >
+              <Image
+                source={{ uri: item?.node?.image?.originalSrc }}
+                style={styles.categoryIcon}
+                resizeMode="cover"
+              />
+              <Typography
+                textStyle={styles.categoryText}
+                title={item.node.title}
+              />
+            </Pressable>
+          );
+        }}
+      />
+
+      {isOpen && (
+        <View style={styles.overlay}>
+          <View style={styles.container}>
+            <View style={styles.header}>
+              <Typography
+                title="Filter"
+                textStyle={commonStyles.sectionTitle}
+              />
+              <TouchableOpacity
+                onPress={() => setIsOpen(false)}
+                style={styles.closeButton}
+              >
+                <Ionicons name="close" size={24} color="black" />
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={sections}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ marginVertical: 15 }}
+              showsVerticalScrollIndicator={false}
+              renderItem={({ item: section }) => (
+                <View style={styles.section}>
+                  <TouchableOpacity
+                    onPress={() => toggleSection(section.id)}
+                    style={styles.sectionHeader}
+                  >
+                    <Typography
+                      title={section.title}
+                      textStyle={styles.sectionTitle}
+                      size={14}
+                    />
+                    <Ionicons
+                      name={section.expanded ? "chevron-up" : "chevron-down"}
+                      size={20}
+                    />
+                  </TouchableOpacity>
+
+                  {section.expanded && section.options && (
+                    <FlatList
+                      data={section.options}
+                      keyExtractor={(option) => option.id}
+                      renderItem={({ item: option }) => (
+                        <TouchableOpacity
+                          key={option.id}
+                          style={styles.option}
+                          onPress={() => toggleOption(section.id, option.id)}
+                        >
+                          <View
+                            style={[
+                              styles.optionCircle,
+                              option.checked && styles.checkedCircle,
+                            ]}
+                          >
+                            {option.checked && (
+                              <Ionicons
+                                name="checkmark"
+                                size={18}
+                                color={colors.white}
+                              />
+                            )}
+                          </View>
+                          <Typography
+                            textStyle={{
+                              fontFamily: fonts.regular,
+                              letterSpacing: 1,
+                            }}
+                            title={option.label}
+                            size={14}
+                          ></Typography>
+                        </TouchableOpacity>
+                      )}
+                    />
+                  )}
+
+                  {section.id === "price" && section.expanded && (
+                    <View style={styles.priceRange}>
+                      <Typography title="Price Range" size={14} />
+                      <MultiSlider
+                        values={section.priceRange || [0, 60]}
+                        min={section.minPrice || 0}
+                        max={section.maxPrice || 60}
+                        onValuesChange={handlePriceChange}
+                        sliderLength={250}
+                        step={10}
+                        customMarker={() => (
+                          <Octicons
+                            name="dot-fill"
+                            size={32}
+                            color={colors.primary}
+                          />
+                        )}
+                        allowOverlap={false}
+                        snapped
+                        selectedStyle={{
+                          backgroundColor: colors.primaryLight,
+                        }}
+                        unselectedStyle={{
+                          backgroundColor: colors.gray,
+                        }}
+                      />
+
+                      <View style={styles.priceTextContainer}>
+                        <Typography
+                          title={`$ ${section.priceRange?.[0]}`}
+                          size={14}
+                        />
+                        <Typography title="to" size={14} />
+                        <Typography
+                          title={`$ ${section.priceRange?.[1]}`}
+                          size={14}
+                        />
+                      </View>
+                    </View>
+                  )}
+                </View>
+              )}
+            />
+
+            <View style={styles.footer}>
+              <TouchableOpacity onPress={clearAll} style={styles.clearButton}>
+                <Ionicons name="trash-bin" size={20} color="black" />
+                <Typography title="Clear all" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.applyButton}
+                onPress={applyFilters}
+              >
+                <Typography title="Apply" textStyle={styles.applyButtonText} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
+
+      <FlatList
+        data={filter && filter.length > 0 ? filter : products}
         renderItem={renderProduct}
         keyExtractor={keyExtractor}
         numColumns={2}
@@ -173,8 +514,6 @@ const Collections = () => {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   errorContainer: {
     flex: 1,
@@ -249,6 +588,124 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 5,
   },
+  categoryItem: {
+    flexDirection: "row",
+    gap: 10,
+    height: 40,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    backgroundColor: colors.white,
+    marginHorizontal: 6,
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  activeCategoryItem: {
+    backgroundColor: colors.primaryLight,
+  },
+  categoryIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 30,
+  },
+  categoryText: {
+    marginTop: 5,
+    fontSize: 14,
+    fontFamily: fonts.regular,
+    textAlign: "center",
+  },
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    zIndex: 999,
+  },
+  container: {
+    width: "80%",
+    backgroundColor: "white",
+    borderTopLeftRadius: 12,
+    borderBottomLeftRadius: 12,
+    height: "90%",
+  },
+  closeButton: {
+    padding: 8,
+  },
+  sections: {
+    flex: 1,
+    padding: 8,
+    marginBottom: 60,
+  },
+  section: {
+    marginBottom: 12,
+    paddingHorizontal: 10,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 12,
+    borderColor: colors.borderColor,
+    borderBottomWidth: 1,
+    borderRadius: 8,
+  },
+  sectionTitle: {
+    fontFamily: fonts.regular,
+    letterSpacing: 4,
+  },
+  options: {
+    paddingLeft: 20,
+  },
+  option: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 8,
+    marginLeft: 10,
+  },
+  optionCircle: {
+    height: 24,
+    width: 24,
+    borderWidth: 1,
+    borderColor: colors.borderColor,
+    marginRight: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkedCircle: {
+    backgroundColor: colors.black,
+  },
+  priceRange: {
+    paddingTop: 12,
+    paddingHorizontal: 20,
+  },
+  priceTextContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderColor,
+  },
+  clearButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  applyButton: {
+    backgroundColor: colors.black,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  applyButtonText: { color: colors.white, fontFamily: fonts.regular },
 });
 
 export default Collections;

@@ -4,8 +4,8 @@ import userRegisterSlice from '../slice/userRegisterSlice';
 import userAuthenticateSlice from '../slice/userAuthenticateSlice';
 import getCategoriesSlice from '../slice/categoriesSlice'
 import categoriesDataSlice from '../slice/categoriesDataSlice';
-import getProductsSlice from '../slice/getProductSlice';
-import filterProductsSlice from '../slice/filterProdutSlice'
+import filterProductsSlice from '../slice/filterproductsSlice';
+import searchProductsSlice from '../slice/searchProductsSlice';
 
 const store = configureStore({
   reducer: {
@@ -14,8 +14,8 @@ const store = configureStore({
     getUserAuthenticate: userAuthenticateSlice,
     getCategories:getCategoriesSlice,
     categoriesData:categoriesDataSlice,
-    getProducts:getProductsSlice,
-    filterProducts:filterProductsSlice
+    filterProducts:filterProductsSlice,
+    searchProducts:searchProductsSlice
   }
 });
 
