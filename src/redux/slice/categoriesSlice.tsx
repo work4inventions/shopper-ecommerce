@@ -14,7 +14,7 @@ export const getCategories: any = createAsyncThunk(
   async () => {
     const query = `
     query($cursor: String) {
-      collections(first: 10, after: $cursor) {
+      collections(first: 20, after: $cursor) {
         edges {
           node {
             id

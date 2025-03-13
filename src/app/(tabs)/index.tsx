@@ -6,6 +6,7 @@ import Saying from "@/src/components/Home/Saying";
 import MyCarousel from "@/src/components/Home/Slider";
 import { commonStyles } from "@/src/config/styles/commonStyles";
 import { getCategories } from "@/src/redux/slice/categoriesSlice";
+import { Products } from "@/src/redux/slice/productSlice";
 import { RootState } from "@/src/redux/store/store";
 import React, { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -23,8 +24,10 @@ const HomeScreen = () => {
   useEffect(() => {
     const trendingData = async () => {
       const response = await dispatch(getCategories());
-      const trending = await response?.payload?.edges?.find((item) => item.node.title === "Trending");
-      if (trending) {              
+      const trending = await response?.payload?.edges?.find(
+        (item) => item.node.title === "Trending"
+      );
+      if (trending) {
         setTrendingProduct(trending?.node?.products);
       }
       const newArrivals = await response?.payload?.edges?.find(
@@ -49,20 +52,25 @@ const HomeScreen = () => {
       <Categories />
 
       {/* Products Grid */}
-      <View style={{marginVertical:10}}>
-      <Typography title="Trending Now" textStyle={commonStyles.sectionTitle} />
-      <Product getCategorieData={TrendingProduct} />
+      <View style={{ marginVertical: 10 }}>
+        <Typography
+          title="Trending Now"
+          textStyle={commonStyles.sectionTitle}
+        />
+        <Product getCategorieData={TrendingProduct} />
       </View>
 
       <CategoryCard />
 
       <Saying />
 
-      <View style={{marginVertical:10,marginBottom:40}}>
-      <Typography title="New Arrivals" textStyle={commonStyles.sectionTitle} />
-      <Product getCategorieData={NewArrivals} />
+      <View style={{ marginVertical: 10, marginBottom: 40 }}>
+        <Typography
+          title="New Arrivals"
+          textStyle={commonStyles.sectionTitle}
+        />
+        <Product getCategorieData={NewArrivals} />
       </View>
-
     </ScrollView>
   );
 };

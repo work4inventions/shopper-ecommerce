@@ -1,57 +1,65 @@
+import { ACCESS_TOKEN, API_URL } from "@/src/utils/commonUtils";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import AxiosInstance from "../../authServices/axiosInstance";
-import { ACCESS_TOKEN, API_URL } from "@/src/utils/commonUtils";
 
 interface initialValType {
   isLoading: boolean;
   data: any | null;
   isError: boolean;
   errorMessage: string;
+  hasNextPage: boolean;
+  cursor: string | null;
+  products: any[];
 }
 
 export const categoriesData: any = createAsyncThunk(
   "categoriesData",
-  async (id) => {
+  async ({ id, cursor }: { id: string; cursor: string | null }) => {
     const query = `
-    query($id: ID!) {
-      collection(id: $id) {
-        products(first: 20) {
-          edges {
-            node {
-              id
-              title
-              handle
-              description
-              images(first: 1) {
-                edges {
-                  node {
-                    originalSrc
+      query($id: ID!, $cursor: String) {
+        collection(id: $id) {
+          products(first: 20, after: $cursor) {
+            edges {
+              node {
+                id
+                title
+                handle
+                description
+                images(first: 1) {
+                  edges {
+                    node {
+                      originalSrc
+                    }
+                  }
+                }
+                compareAtPriceRange {
+                  minVariantPrice {
+                    amount
+                    currencyCode
+                  }
+                }
+                priceRange {
+                  minVariantPrice {
+                    amount
+                    currencyCode
                   }
                 }
               }
-              compareAtPriceRange {
-                minVariantPrice {
-                  amount
-                  currencyCode
-                }
-              }
-              priceRange {
-                minVariantPrice {
-                  amount
-                  currencyCode
-                }
-              }
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
             }
           }
         }
       }
-    }
-  `;
-  const variables = { id }; 
+    `;
+    const variables = { id, cursor };
+
     try {
-      let response = await AxiosInstance.post(
+      const response = await AxiosInstance.post(
         `${API_URL}`,
-        { query ,variables},
+        { query, variables },
         {
           headers: {
             "X-Shopify-Storefront-Access-Token": `${ACCESS_TOKEN}`,
@@ -59,12 +67,15 @@ export const categoriesData: any = createAsyncThunk(
           },
         }
       );
-      return response.data.data.collection.products.edges;
+      return {
+        edges: response.data.data.collection.products.edges,
+        pageInfo: response.data.data.collection.products.pageInfo,
+      };
     } catch (error: any) {
       if (error.response) {
-        throw error.response.data.message;
+        throw new Error(error.response.data.message || "Unknown error");
       } else {
-        throw error;
+        throw new Error(error.message || "Unknown error");
       }
     }
   }
@@ -75,12 +86,19 @@ const initialState: initialValType = {
   data: null,
   isError: false,
   errorMessage: "",
+  hasNextPage: true,
+  cursor: null,
+  products: [],
 };
 
 const categoriesDataSlice = createSlice({
   name: "categoriesData",
   initialState,
-  reducers: {},
+  reducers: {
+    resetCategoriesData: (state) => {
+      return initialState;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(categoriesData.pending, (state) => {
@@ -90,9 +108,11 @@ const categoriesDataSlice = createSlice({
       })
 
       .addCase(categoriesData.fulfilled, (state, action) => {
+        const { edges, pageInfo } = action.payload;
+        state.products = [...state.products, ...edges];
+        state.hasNextPage = pageInfo.hasNextPage;
+        state.cursor = pageInfo.endCursor;
         state.isLoading = false;
-        state.data = action.payload;
-        state.isError = false;
       })
 
       .addCase(categoriesData.rejected, (state, action) => {
@@ -102,5 +122,7 @@ const categoriesDataSlice = createSlice({
       });
   },
 });
+
+export const { resetCategoriesData } = categoriesDataSlice.actions;
 
 export default categoriesDataSlice.reducer;

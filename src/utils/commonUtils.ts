@@ -156,19 +156,21 @@ export const formatType = (type: string = ''): string => {
   return type.replace(/_/g, ' ');
 };
 
-export const generateEmail = () => {
-  let email = `testi11${Math.floor(Math.random() * 50)}@gmail.com`;
-  return email;
-};
-
-export const getMaxFileSize = (planName: string) => {
-  if (planName === 'free-trial') {
-    return 5 * 1024 * 1024;
-  } else {
-    return 250 * 1024 * 1024;
+export const getSortKey = (sort) => {
+  switch (sort) {
+    case "featured":
+      return "BEST_SELLING";
+    case "price-low-high":
+    case "price-high-low":
+      return "PRICE";
+    default:
+      return "BEST_SELLING";
   }
 };
 
+export const getReverseValue = (sort) => {
+  return sort === "price-high-low";
+};
 
 export const API_URL = 'https://shopper-ecommerce.myshopify.com/api/2025-01/graphql.json';
 export const ACCESS_TOKEN = "4bd135aed7c24e3a73afe9667ab059fd";

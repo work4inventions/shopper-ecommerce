@@ -19,7 +19,7 @@ const Product = ({ getCategorieData }: any) => {
   const renderProduct = ({ item }) => {
     const imageUrl = item.images?.edges?.[0]?.node?.originalSrc;
     return (
-      <Pressable style={styles.productCard}  onPress={() => router.replace({
+      <Pressable style={styles.productCard}  onPress={() => router.push({
           pathname: "/productDetail",
           params: { item: JSON.stringify(item) },
         })}>

@@ -21,9 +21,9 @@ const Categories = () => {
         key={`category-${item.id}-${index}`}
         style={styles.categoryItem}
         onPress={() =>
-          router.replace({
+          router.push({
             pathname: "/collections",
-            params: { item: JSON.stringify(item) },
+            params: { id: item.id },
           })
         }
       >
